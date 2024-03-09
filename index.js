@@ -10,6 +10,8 @@ const authRouter = require("./routes/authRouter");
 const mealsRouter = require("./routes/mealsRouter");
 const testimonialsRouter = require("./routes/testimonialRouter");
 const pricingRoutes = require("./routes/pricingRouter");
+const blogPostsRouter = require("./routes/blogPostsRouter");
+const contactRouter = require("./routes/contactRouter");
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -18,8 +20,10 @@ app.use(express.json());
 app.use("/users", authRouter);
 app.use("/api/meals", mealsRouter);
 app.use("/api/testimonials", testimonialsRouter);
+app.use("/api/blogPosts", blogPostsRouter);
 
 app.use("/api/pricing", pricingRoutes);
+app.use("/contact", contactRouter);
 
 mongoose
   .connect(process.env.MONGODB_URI)
