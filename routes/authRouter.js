@@ -8,11 +8,20 @@ router.post("/register", async (req, res) => {
   try {
     const { email, password, firstname, lastname } = req.body;
 
-    const user = new User({ email, password, firstname, lastname });
+    // const user = new User({ email, password, firstname, lastname });
+    // console.log(user);
 
-    console.log(user);
-    await user.save();
+    // await user();
+
+    const user = await User.create({
+      email,
+      password,
+      firstname,
+      lastname,
+    });
+
     console.log("User saved", user);
+
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
@@ -28,7 +37,7 @@ router.post("/register", async (req, res) => {
       msg: "SUCCESS",
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json({ error: error.message });
   }
 });
 
