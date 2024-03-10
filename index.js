@@ -1,10 +1,11 @@
 require("dotenv").config();
 const express = require("express");
+const app = express();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const serverless = require("serverless-http");
 
-const app = express();
 const PORT = process.env.PORT || 5000;
 const authRouter = require("./routes/authRouter");
 const mealsRouter = require("./routes/mealsRouter");
@@ -23,7 +24,6 @@ app.use("/api/meals", mealsRouter);
 app.use("/api/testimonials", testimonialsRouter);
 app.use("/api/wishlist", wishlistRouter);
 
-app.use("/api/pricing", pricingRoutes);
 app.use("/api/blogPosts", blogPostsRouter);
 
 app.use("/api/pricing", pricingRoutes);
@@ -35,7 +35,10 @@ mongoose
   .catch((err) => console.log(err));
 
 app.get("/", (req, res) => {
-  res.send("home page");
+  res.send("Hello from Express on Netlify!");
 });
 
+// for development
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = app;
+// module.exports.handler = serverless(app);
