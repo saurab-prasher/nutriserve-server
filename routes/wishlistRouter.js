@@ -18,21 +18,20 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// Remove meal from wishlist
-// router.post("/wishlist/remove", async (req, res) => {
-//   try {
-//     const { userId, mealId } = req.body;
-//     const wishlist = await Wishlist.findOneAndUpdate(
-//       { userId },
-//       { $pull: { meals: mealId } },
-//       { new: true }
-//     );
-//     res.json(wishlist);
-//   } catch (error) {
-//     console.error("Error removing meal from wishlist:", error);
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+router.post("/remove", async (req, res) => {
+  // Simplified endpoint for consistency
+  try {
+    const { userId, mealId } = req.body;
+    const wishlist = await Wishlist.findOneAndUpdate(
+      { userId },
+      { $pull: { mealId: mealId } }, // Assure this field name matches your schema
+      { new: true }
+    );
+    res.json(wishlist);
+  } catch (error) {
+    console.error("Error removing meal from wishlist:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;
