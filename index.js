@@ -4,7 +4,8 @@ const app = express();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const serverless = require("serverless-http");
+
+const cookieParser = require("cookie-parser");
 
 const PORT = process.env.PORT || 5000;
 const authRouter = require("./routes/authRouter");
@@ -15,7 +16,17 @@ const wishlistRouter = require("./routes/wishlistRouter");
 const blogPostsRouter = require("./routes/blogPostsRouter");
 const contactRouter = require("./routes/contactRouter");
 
-app.use(cors());
+app.use(cookieParser());
+
+// CORS configuration
+const corsOptions = {
+  origin: "http://localhost:3000", // Allow only the frontend origin
+  credentials: true, // Allow cookies and credentials
+  optionsSuccessStatus: 200, // For legacy browser support
+};
+
+app.use(cors(corsOptions)); // Use CORS options
+
 app.use(bodyParser.json());
 app.use(express.json());
 
