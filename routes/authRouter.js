@@ -88,7 +88,6 @@ router.get("/auth/verify", authenticateUser, (req, res) => {
 
 // This is an additional endpoint to existing '/auth/verify'
 router.get("/auth/user", authenticateUser, (req, res) => {
-  console.log(req.userId);
   User.findById(req.userId)
     .then((user) => {
       res.json({

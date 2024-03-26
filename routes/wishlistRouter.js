@@ -1,8 +1,10 @@
 const router = require("express").Router();
 const Wishlist = require("../models/Wishlist");
 
+const authenticateUser = require("../middlewares/authMiddleware");
+
 // Add meal to wishlist
-router.post("/", async (req, res) => {
+router.post("/", authenticateUser, async (req, res) => {
   try {
     const { userId, mealId } = req.body;
 
@@ -11,12 +13,23 @@ router.post("/", async (req, res) => {
       { $addToSet: { mealId: mealId } },
       { upsert: true, new: true }
     );
-    console.log(wishlist);
+
     res.json(wishlist);
   } catch (error) {
     console.error("Error adding meal to wishlist:", error);
     res.status(500).json({ error: error.message });
   }
+});
+
+router.get("/:id", authenticateUser, async (req, res) => {
+  // try {
+  //   console.log(req.params.id);
+  //   const wishlist = await Wishlist.findById(req.params.id);
+  //   res.json(wishlist);
+  // } catch (error) {
+  //   console.error("Error adding meal to wishlist:", error);
+  //   res.status(500).json({ error: error.message });
+  // }
 });
 router.post("/remove", async (req, res) => {
   // Simplified endpoint for consistency
