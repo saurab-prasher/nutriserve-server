@@ -46,7 +46,7 @@ mongoose
   .catch((err) => console.log(err));
 
 app.get("/", (req, res) => {
-  res.send("Hello from Express on Netlify!");
+  res.send("Hello from Express on Vercel!");
 });
 
 // for development
