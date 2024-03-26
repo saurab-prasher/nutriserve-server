@@ -18,9 +18,21 @@ const contactRouter = require("./routes/contactRouter");
 
 app.use(cookieParser());
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://nutriserve-client.vercel.app",
+];
+
 // CORS configuration
 const corsOptions = {
-  origin: "http://localhost:3000", // Allow only the frontend origin
+  origin: function (origin, callback) {
+    // Check if the request origin is included in the allowedOrigins array
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true); // Allow the request
+    } else {
+      callback(new Error("Not allowed by CORS")); // Deny the request
+    }
+  },
   credentials: true, // Allow cookies and credentials
   optionsSuccessStatus: 200, // For legacy browser support
 };
