@@ -20,6 +20,8 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   "http://localhost:3000",
+  "https://angular-client-web-main.vercel.app,
+  "http://localhost:4200",
   "https://nutriserve-client.vercel.app",
 ];
 
