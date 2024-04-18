@@ -2,6 +2,7 @@ const router = require("express").Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const authenticateUser = require("../middlewares/authMiddleware");
+const cors = require("cors");
 // Register User
 // Your JWT secret key
 const JWT_SECRET = process.env.JWT_SECRET;

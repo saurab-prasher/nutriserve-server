@@ -26,20 +26,26 @@ const allowedOrigins = [
 ];
 
 // CORS configuration
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Check if the request origin is included in the allowedOrigins array
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true); // Allow the request
-    } else {
-      callback(new Error("Not allowed by CORS")); // Deny the request
-    }
-  },
-  credentials: true, // Allow cookies and credentials
-  optionsSuccessStatus: 200, // For legacy browser support
-};
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     // Check if the request origin is included in the allowedOrigins array
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true); // Allow the request
+//     } else {
+//       callback(new Error("Not allowed by CORS")); // Deny the request
+//     }
+//   },
+//   credentials: true, // Allow cookies and credentials
+//   optionsSuccessStatus: 200, // For legacy browser support
+// };
 
-app.use(cors(corsOptions)); // Use CORS options
+// app.use(cors(corsOptions)); // Use CORS options
+
+app.use(
+  cors({
+    origin: "*", // Allows all origins
+  })
+);
 
 app.use(bodyParser.json());
 app.use(express.json());
