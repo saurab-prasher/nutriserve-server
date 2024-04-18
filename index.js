@@ -27,6 +27,7 @@ const allowedOrigins = [
   "https://nutriserve-client.vercel.app/meals",
   "https://nutriserve-client.vercel.app/checkout",
   "https://nutriserve-server.vercel.app/users/auth/user",
+  "https://nutriserve-server.vercel.app/api/testimonials",
 ];
 
 // CORS configuration
