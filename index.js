@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const cookieParser = require("cookie-parser");
-
+const path = require("path");
 const PORT = process.env.PORT || 5000;
 const authRouter = require("./routes/authRouter");
 const mealsRouter = require("./routes/mealsRouter");
@@ -17,17 +17,18 @@ const blogPostsRouter = require("./routes/blogPostsRouter");
 const contactRouter = require("./routes/contactRouter");
 
 app.use(cookieParser());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const allowedOrigins = [
   "http://localhost:3000",
   "https://angular-client-web-main.vercel.app",
   "http://localhost:4200",
   "https://nutriserve-client.vercel.app",
-  "https://nutriserve-client.vercel.app/login",
-  "https://nutriserve-client.vercel.app/meals",
-  "https://nutriserve-client.vercel.app/checkout",
-  "https://nutriserve-server.vercel.app/users/auth/user",
-  "https://nutriserve-server.vercel.app/api/testimonials",
+  // "https://nutriserve-client.vercel.app/login",
+  // "https://nutriserve-client.vercel.app/meals",
+  // "https://nutriserve-client.vercel.app/checkout",
+  // "https://nutriserve-server.vercel.app/users/auth/user",
+  // "https://nutriserve-server.vercel.app/api/testimonials",
 ];
 
 // CORS configuration

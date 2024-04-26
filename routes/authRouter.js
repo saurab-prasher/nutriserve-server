@@ -1,21 +1,29 @@
 const router = require("express").Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const multer = require("multer"); // Multer is a middleware for handling multipart/form-data
+
+const upload = multer({ dest: "uploads/" }); // Configure multer
+
 const authenticateUser = require("../middlewares/authMiddleware");
 const cors = require("cors");
 // Register User
 // Your JWT secret key
 const JWT_SECRET = process.env.JWT_SECRET;
 
-router.post("/register", async (req, res) => {
+router.post("/register", upload.single("avatarImg"), async (req, res) => {
   try {
     const { email, password, firstname, lastname } = req.body;
+    console.log(req.body);
+
+    const avatarImg = req.file; // this is the uploaded image file from multer
 
     const user = await User.create({
       email,
       password,
       firstname,
       lastname,
+      avatarImg: avatarImg.path,
     });
 
     console.log("User saved", user);
@@ -72,11 +80,51 @@ router.post("/login", async (req, res) => {
         email: user.email,
         firstname: user.firstname,
         lastname: user.lastname,
+        avatarImg: user.avatarImg,
       },
       msg: "Successfully signed",
     });
   } catch (error) {
     console.error("Registration error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update User Address
+router.post("/updateAddress", authenticateUser, async (req, res) => {
+  const { street, unit, city, state, postalCode, country } = req.body;
+  try {
+    // Assuming req.userId is set by the authenticateUser middleware
+    const updatedUser = await User.findByIdAndUpdate(
+      req.userId,
+      {
+        $set: {
+          "address.street": street,
+          "address.unit": unit,
+          "address.city": city,
+          "address.state": state,
+          "address.postalCode": postalCode,
+          "address.country": country,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({
+      message: "Address updated successfully",
+      user: {
+        email: updatedUser.email,
+        firstname: updatedUser.firstname,
+        lastname: updatedUser.lastname,
+        address: updatedUser.address,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating address:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -97,6 +145,7 @@ router.get("/auth/user", authenticateUser, (req, res) => {
           firstname: user.firstname,
           lastname: user.lastname,
           email: user.email,
+          avatarImg: user.avatarImg,
         },
         msg: "Success",
       });

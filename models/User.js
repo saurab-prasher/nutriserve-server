@@ -1,14 +1,17 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const Address = require("./Address");
 
 const UserSchema = new mongoose.Schema({
   firstname: { type: String, required: true },
   lastname: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  avatarImg: { type: String },
   preferences: [String], // e.g., ["Gluten-free", "Vegan"]
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  address: Address,
 });
 
 // Pre-save hook to hash password
