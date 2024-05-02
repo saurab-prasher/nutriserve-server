@@ -38,5 +38,5 @@ const PricingSchema = new mongoose.Schema({
 });
 
 const Pricing = mongoose.model("Pricing", PricingSchema);
-
-module.exports = Pricing;
+exports.PricingSchema = PricingSchema;
+exports.Pricing = Pricing;

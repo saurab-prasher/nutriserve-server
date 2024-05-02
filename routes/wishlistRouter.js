@@ -23,7 +23,6 @@ router.post("/", authenticateUser, async (req, res) => {
 
 router.get("/:id", authenticateUser, async (req, res) => {
   // try {
-  //   console.log(req.params.id);
   //   const wishlist = await Wishlist.findById(req.params.id);
   //   res.json(wishlist);
   // } catch (error) {

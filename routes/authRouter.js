@@ -14,7 +14,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 router.post("/register", upload.single("avatarImg"), async (req, res) => {
   try {
     const { email, password, firstname, lastname } = req.body;
-    console.log(req.body);
 
     const avatarImg = req.file; // this is the uploaded image file from multer
 
@@ -25,8 +24,6 @@ router.post("/register", upload.single("avatarImg"), async (req, res) => {
       lastname,
       avatarImg: avatarImg.path,
     });
-
-    console.log("User saved", user);
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
       expiresIn: "1d",
@@ -53,14 +50,14 @@ router.get("/login", (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body);
+
     const user = await User.findOne({ email });
-    console.log(user); // Check if user is found
+
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
     const isMatch = await user.isValidPassword(password);
-    console.log(isMatch); // Check if password is correct
+
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -81,6 +78,7 @@ router.post("/login", async (req, res) => {
         firstname: user.firstname,
         lastname: user.lastname,
         avatarImg: user.avatarImg,
+        address: user.address,
       },
       msg: "Successfully signed",
     });
@@ -129,6 +127,39 @@ router.post("/updateAddress", authenticateUser, async (req, res) => {
   }
 });
 
+router.post("/setplan", upload.none(), authenticateUser, async (req, res) => {
+  console.log(req.body);
+  const { planName, numOfPeople, recipesPerWeek, totalPrice } = req.body;
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.userId,
+
+    {
+      $set: {
+        "plan.planName": planName,
+        "plan.numberOfPeople": numOfPeople,
+        "plan.recipesPerWeek": recipesPerWeek,
+        "plan.totalPricePerWeek": totalPrice,
+      },
+    },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  res.json({
+    message: "plan added successfully",
+    user: {
+      email: updatedUser.email,
+      firstname: updatedUser.firstname,
+      lastname: updatedUser.lastname,
+      address: updatedUser.address,
+    },
+  });
+});
+
 // Verification route
 router.get("/auth/verify", authenticateUser, (req, res) => {
   // If the middleware did not throw an error, user is considered authenticated
@@ -158,10 +189,6 @@ router.get("/auth/user", authenticateUser, (req, res) => {
 router.get("/logout", (req, res) => {
   res.clearCookie("token");
   res.status(200).json({ message: "Logged out successfully" });
-});
-
-router.put("/me", (req, res) => {
-  console.log("Update the current user's profile");
 });
 
 module.exports = router;
