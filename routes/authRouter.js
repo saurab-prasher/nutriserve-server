@@ -70,7 +70,7 @@ router.post("/login", async (req, res) => {
       sameSite: "strict", // helps prevent CSRF
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
-
+    console.log(user);
     res.json({
       user: {
         userId: user._id,
@@ -79,11 +79,12 @@ router.post("/login", async (req, res) => {
         lastname: user.lastname,
         avatarImg: user.avatarImg,
         address: user.address,
+        plan: user.plan,
       },
       msg: "Successfully signed",
     });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("login error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -128,7 +129,6 @@ router.post("/updateAddress", authenticateUser, async (req, res) => {
 });
 
 router.post("/setplan", upload.none(), authenticateUser, async (req, res) => {
-  console.log(req.body);
   const { planName, numOfPeople, recipesPerWeek, totalPrice } = req.body;
 
   const updatedUser = await User.findByIdAndUpdate(
@@ -160,6 +160,17 @@ router.post("/setplan", upload.none(), authenticateUser, async (req, res) => {
   });
 });
 
+router.get("/getplan", authenticateUser, async (req, res) => {
+  const user = await User.findById(req.userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  console.log(user);
+
+  res.json({
+    plan: user.plan,
+  });
+});
 // Verification route
 router.get("/auth/verify", authenticateUser, (req, res) => {
   // If the middleware did not throw an error, user is considered authenticated
@@ -177,6 +188,8 @@ router.get("/auth/user", authenticateUser, (req, res) => {
           lastname: user.lastname,
           email: user.email,
           avatarImg: user.avatarImg,
+          address: user.address,
+          plan: user.plan,
         },
         msg: "Success",
       });
