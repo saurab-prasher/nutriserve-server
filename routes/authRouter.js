@@ -129,7 +129,8 @@ router.post("/updateAddress", authenticateUser, async (req, res) => {
 });
 
 router.post("/setplan", upload.none(), authenticateUser, async (req, res) => {
-  const { planName, numOfPeople, recipesPerWeek, totalPrice } = req.body;
+  const { planName, numOfPeople, recipesPerWeek, totalPrice, planDescription } =
+    req.body;
 
   const updatedUser = await User.findByIdAndUpdate(
     req.userId,
@@ -140,6 +141,7 @@ router.post("/setplan", upload.none(), authenticateUser, async (req, res) => {
         "plan.numberOfPeople": numOfPeople,
         "plan.recipesPerWeek": recipesPerWeek,
         "plan.totalPricePerWeek": totalPrice,
+        "plan.description": planDescription,
       },
     },
     { new: true }
