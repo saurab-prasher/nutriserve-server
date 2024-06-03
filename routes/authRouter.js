@@ -7,6 +7,7 @@ const upload = multer({ dest: "uploads/" }); // Configure multer
 
 const authenticateUser = require("../middlewares/authMiddleware");
 const cors = require("cors");
+const { Pricing: PricingPlan } = require("../models/pricingPlan");
 // Register User
 // Your JWT secret key
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -133,39 +134,52 @@ router.post("/updateAddress", authenticateUser, async (req, res) => {
   }
 });
 
-router.post("/setplan", upload.none(), authenticateUser, async (req, res) => {
-  const { planName, numOfPeople, recipesPerWeek, totalPrice, planDescription } =
-    req.body;
+router.post(
+  "/setuserplan",
+  upload.none(),
+  authenticateUser,
+  async (req, res) => {
+    console.log("I'm working");
+    const {
+      planName,
+      numOfPeople,
+      recipesPerWeek,
+      totalPrice,
+      planDescription,
+    } = req.body;
 
-  const updatedUser = await User.findByIdAndUpdate(
-    req.userId,
+    console.log(req.body);
 
-    {
-      $set: {
-        "plan.planName": planName,
-        "plan.numberOfPeople": numOfPeople,
-        "plan.recipesPerWeek": recipesPerWeek,
-        "plan.totalPricePerWeek": totalPrice,
-        "plan.description": planDescription,
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+
+      {
+        $set: {
+          "plan.planName": planName,
+          "plan.numberOfPeople": numOfPeople,
+          "plan.recipesPerWeek": recipesPerWeek,
+          "plan.totalPricePerWeek": totalPrice,
+          "plan.description": planDescription,
+        },
       },
-    },
-    { new: true }
-  );
+      { new: true }
+    );
 
-  if (!updatedUser) {
-    return res.status(404).json({ error: "User not found" });
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({
+      message: "plan added successfully",
+      user: {
+        email: updatedUser.email,
+        firstname: updatedUser.firstname,
+        lastname: updatedUser.lastname,
+        address: updatedUser.address,
+      },
+    });
   }
-
-  res.json({
-    message: "plan added successfully",
-    user: {
-      email: updatedUser.email,
-      firstname: updatedUser.firstname,
-      lastname: updatedUser.lastname,
-      address: updatedUser.address,
-    },
-  });
-});
+);
 
 router.get("/getplan", authenticateUser, async (req, res) => {
   const user = await User.findById(req.user.userId);
@@ -173,12 +187,12 @@ router.get("/getplan", authenticateUser, async (req, res) => {
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
-  console.log(user);
 
   res.json({
     plan: user.plan,
   });
 });
+
 // Verification route
 router.get("/auth/verify", authenticateUser, (req, res) => {
   // If the middleware did not throw an error, user is considered authenticated
