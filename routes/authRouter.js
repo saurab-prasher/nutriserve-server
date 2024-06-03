@@ -168,7 +168,8 @@ router.post("/setplan", upload.none(), authenticateUser, async (req, res) => {
 });
 
 router.get("/getplan", authenticateUser, async (req, res) => {
-  const user = await User.findById(req.userId);
+  const user = await User.findById(req.user.userId);
+
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
