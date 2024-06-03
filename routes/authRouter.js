@@ -10,6 +10,7 @@ const cors = require("cors");
 // Register User
 // Your JWT secret key
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION;
 
 router.post("/register", upload.single("avatarImg"), async (req, res) => {
   try {
@@ -22,11 +23,11 @@ router.post("/register", upload.single("avatarImg"), async (req, res) => {
       password,
       firstname,
       lastname,
-      avatarImg: avatarImg.path,
+      avatarImg: `/uploads/${avatarImg.filename}`,
     });
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: JWT_EXPIRATION,
     });
     res.cookie("token", token, {
       httpOnly: true,
@@ -36,7 +37,8 @@ router.post("/register", upload.single("avatarImg"), async (req, res) => {
     });
     res.json({
       message: "Success",
-      user: { email, firstname, lastname },
+      user: { email, firstname, lastname, avatarImg: user.avatarImg },
+      token,
     });
   } catch (error) {
     res.json({ error: error.message });
@@ -78,10 +80,12 @@ router.post("/login", async (req, res) => {
         firstname: user.firstname,
         lastname: user.lastname,
         avatarImg: user.avatarImg,
+
         address: user.address,
         plan: user.plan,
       },
       msg: "Successfully signed",
+      token,
     });
   } catch (error) {
     console.error("login error:", error);
@@ -121,6 +125,7 @@ router.post("/updateAddress", authenticateUser, async (req, res) => {
         lastname: updatedUser.lastname,
         address: updatedUser.address,
       },
+      token,
     });
   } catch (error) {
     console.error("Error updating address:", error);
@@ -176,13 +181,15 @@ router.get("/getplan", authenticateUser, async (req, res) => {
 // Verification route
 router.get("/auth/verify", authenticateUser, (req, res) => {
   // If the middleware did not throw an error, user is considered authenticated
-  res.status(200).json({ message: "Authenticated" });
+  res.status(200).json({ message: "Authenticated", user: req.user });
 });
 
-// This is an additional endpoint to existing '/auth/verify'
 router.get("/auth/user", authenticateUser, (req, res) => {
-  User.findById(req.userId)
+  User.findById(req.user.userId)
     .then((user) => {
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
       res.json({
         user: {
           userId: user._id,
@@ -190,6 +197,7 @@ router.get("/auth/user", authenticateUser, (req, res) => {
           lastname: user.lastname,
           email: user.email,
           avatarImg: user.avatarImg,
+
           address: user.address,
           plan: user.plan,
         },
