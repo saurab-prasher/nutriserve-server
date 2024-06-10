@@ -62,7 +62,7 @@ router.post("/login", async (req, res) => {
     const isMatch = await user.isValidPassword(password);
 
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.json({ msg: "Invalid credentials" });
     }
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
       expiresIn: "1d",
@@ -115,7 +115,7 @@ router.post("/updateAddress", authenticateUser, async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res.json({ error: "User not found" });
     }
 
     res.json({
@@ -139,7 +139,6 @@ router.post(
   upload.none(),
   authenticateUser,
   async (req, res) => {
-    console.log("I'm working");
     const {
       planName,
       numOfPeople,
@@ -147,8 +146,6 @@ router.post(
       totalPrice,
       planDescription,
     } = req.body;
-
-    console.log(req.body);
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user.userId,
