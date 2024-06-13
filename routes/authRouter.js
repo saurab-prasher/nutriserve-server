@@ -2,45 +2,92 @@ const router = require("express").Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const multer = require("multer"); // Multer is a middleware for handling multipart/form-data
+const AWS = require("aws-sdk");
+// const upload = multer({ dest: "uploads/" }); // Configure multer
 
-const upload = multer({ dest: "uploads/" }); // Configure multer
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
+
+const storage = multer.memoryStorage();
+
+// We can use Multer’s fileFilter function to restrict the file types that can be uploaded
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+// Limiting file size to 5MB
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 1024 * 1024 * 5 },
+});
 
 const authenticateUser = require("../middlewares/authMiddleware");
 const cors = require("cors");
-const { Pricing: PricingPlan } = require("../models/pricingPlan");
+
 // Register User
 // Your JWT secret key
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION;
 
+router.post("/upload", upload.single("img"), async (req, res) => {
+  const file = req.file; // this is the uploaded image file from multer
+  if (!file) {
+    return res.status(400).send("No file uploaded.");
+  }
+});
+
 router.post("/register", upload.single("avatarImg"), async (req, res) => {
   try {
     const { email, password, firstname, lastname } = req.body;
 
-    const avatarImg = req.file; // this is the uploaded image file from multer
+    const file = req.file; // this is the uploaded image file from multer
 
-    const user = await User.create({
-      email,
-      password,
-      firstname,
-      lastname,
-      avatarImg: `/uploads/${avatarImg.filename}`,
-    });
+    const params = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: `${Date.now()}_${file.originalname}`, // Adding timestamp to make the file name unique
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    };
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRATION,
-    });
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true, // set to true if you're using https
-      sameSite: "strict", // helps prevent CSRF
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
-    res.json({
-      message: "Success",
-      user: { email, firstname, lastname, avatarImg: user.avatarImg },
-      token,
-    });
+    try {
+      const data = await s3.upload(params).promise();
+      const fileUrl = data.Location; // This is the URL of the uploaded file
+
+      console.log(fileUrl);
+
+      const user = await User.create({
+        email,
+        password,
+        firstname,
+        lastname,
+        avatarImg: `${fileUrl}`,
+      });
+
+      const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
+        expiresIn: JWT_EXPIRATION,
+      });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true, // set to true if you're using https
+        sameSite: "strict", // helps prevent CSRF
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+      res.json({
+        message: "Success",
+        user: { email, firstname, lastname, avatarImg: user.avatarImg },
+        token,
+      });
+    } catch (error) {
+      console.error("Error uploading file to S3:", error);
+      res.status(500).send("Error uploading file to S3");
+    }
   } catch (error) {
     res.json({ error: error.message });
   }

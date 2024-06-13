@@ -1,4 +1,6 @@
 require("dotenv").config();
+// Suppress AWS warning
+require("aws-sdk/lib/maintenance_mode_message").suppress = true;
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
