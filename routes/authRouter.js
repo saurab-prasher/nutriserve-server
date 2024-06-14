@@ -36,12 +36,79 @@ const cors = require("cors");
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION;
 
-router.post("/upload", upload.single("img"), async (req, res) => {
-  const file = req.file; // this is the uploaded image file from multer
-  if (!file) {
-    return res.status(400).send("No file uploaded.");
+const deleteImageFromS3 = (bucketName, key) => {
+  return new Promise((resolve, reject) => {
+    const params = {
+      Bucket: bucketName,
+      Key: key,
+    };
+
+    s3.deleteObject(params, (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(data);
+    });
+  });
+};
+
+const uploadImageToS3 = (bucketName, file) => {
+  return new Promise((resolve, reject) => {
+    const params = {
+      Bucket: bucketName,
+      Key: `${Date.now()}_${file.originalname}`,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    };
+
+    s3.upload(params, (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(data);
+    });
+  });
+};
+
+router.post(
+  "/editavatar",
+  authenticateUser,
+  upload.single("img"),
+  async (req, res) => {
+    const file = req.file;
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    if (!file) {
+      return res.status(400).send("No file uploaded.");
+    }
+
+    try {
+      //   // Fetch user from the database
+      const user = await User.findById(req.user.userId);
+
+      //   // If user already has an avatar, delete it from S3
+      if (user.avatarImg) {
+        const key = user.avatarImg.split("/").pop();
+        await deleteImageFromS3(bucketName, key);
+      }
+
+      //   // Upload new image to S3
+      const uploadResult = await uploadImageToS3(bucketName, file);
+
+      //   // Update user's avatar URL in the database
+      user.avatarImg = uploadResult.Location;
+      await user.save();
+
+      res.status(200).json({
+        message: "File uploaded successfully!",
+        imageUrl: uploadResult.Location,
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).send("Error uploading file.");
+    }
   }
-});
+);
 
 router.post("/register", upload.single("avatarImg"), async (req, res) => {
   try {
@@ -59,8 +126,6 @@ router.post("/register", upload.single("avatarImg"), async (req, res) => {
     try {
       const data = await s3.upload(params).promise();
       const fileUrl = data.Location; // This is the URL of the uploaded file
-
-      console.log(fileUrl);
 
       const user = await User.create({
         email,
@@ -104,7 +169,7 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.json({ msg: "Invalid credentials" });
     }
     const isMatch = await user.isValidPassword(password);
 
