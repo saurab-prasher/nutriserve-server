@@ -3,6 +3,11 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const multer = require("multer"); // Multer is a middleware for handling multipart/form-data
 const AWS = require("aws-sdk");
+
+const {
+  forgetPassword,
+  resetPassword,
+} = require("../controllers/forgetPassword.controller");
 // const upload = multer({ dest: "uploads/" }); // Configure multer
 
 const s3 = new AWS.S3({
@@ -212,7 +217,7 @@ router.post("/updateAddress", authenticateUser, async (req, res) => {
   try {
     // Assuming req.userId is set by the authenticateUser middleware
     const updatedUser = await User.findByIdAndUpdate(
-      req.userId,
+      req.user.userId,
       {
         $set: {
           "address.street": street,
@@ -238,7 +243,6 @@ router.post("/updateAddress", authenticateUser, async (req, res) => {
         lastname: updatedUser.lastname,
         address: updatedUser.address,
       },
-      token,
     });
   } catch (error) {
     console.error("Error updating address:", error);
@@ -332,6 +336,9 @@ router.get("/auth/user", authenticateUser, (req, res) => {
       res.status(500).json({ error: "An error occurred fetching user data." });
     });
 });
+
+router.post("/forgetPassword", forgetPassword);
+router.post("/reset-password/:token", resetPassword);
 
 router.get("/logout", (req, res) => {
   res.clearCookie("token");
