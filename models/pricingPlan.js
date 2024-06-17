@@ -4,31 +4,24 @@ const mongoose = require("mongoose");
 const PricingSchema = new mongoose.Schema({
   planName: {
     type: String,
-    required: true,
   },
   numberOfPeople: {
     type: Number,
-    required: true,
   },
   recipesPerWeek: {
     type: Number,
-    required: true,
   },
   pricePerServing: {
     type: Number,
-    required: true,
   },
   totalPricePerWeek: {
     type: Number,
-    required: true,
   },
   shipping: {
     type: Number,
-    required: true,
   },
   description: {
     type: String,
-    required: true,
   },
   features: [
     {
