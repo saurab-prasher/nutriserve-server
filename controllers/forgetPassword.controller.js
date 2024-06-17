@@ -36,7 +36,7 @@ forgetPassword = async (req, res) => {
         pass: process.env.PASSWORD_APP_EMAIL,
       },
     });
-    const resetUrl = `${process.env.BASE_URL}/reset-password/${user._id}/${token}`;
+    const resetUrl = `${process.env.BASE_URL}/reset-password/:${token}`;
     // Email configuration
     const mailOptions = {
       from: process.env.EMAIL,
