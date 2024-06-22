@@ -198,7 +198,8 @@ router.post("/login", async (req, res) => {
         firstname: user.firstname,
         lastname: user.lastname,
         avatarImg: user.avatarImg,
-
+        gender: user.gender,
+        birthday: user.birthday,
         address: user.address,
         plan: user.plan,
       },
@@ -207,6 +208,50 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("login error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update User Information
+router.post("/updateUserInfo", authenticateUser, async (req, res) => {
+  const { firstname, lastname, email, gender, birthday } = req.body;
+
+  try {
+    // Assuming req.userId is set by the authenticateUser middleware
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+      {
+        $set: {
+          firstname: firstname,
+          lastname: lastname,
+          email: email,
+          gender: gender,
+          birthday: {
+            month: birthday.month,
+            day: birthday.day,
+            year: birthday.year,
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.json({ error: "User not found" });
+    }
+
+    res.json({
+      message: "User information updated successfully",
+      user: {
+        email: updatedUser.email,
+        firstname: updatedUser.firstname,
+        lastname: updatedUser.lastname,
+        gender: updatedUser.gender,
+        birthday: updatedUser.birthday,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating user information:", error);
     res.status(500).json({ error: error.message });
   }
 });

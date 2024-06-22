@@ -14,6 +14,12 @@ const UserSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
   address: Address,
   plan: PricingSchema,
+  gender: { type: String },
+  birthday: {
+    month: { type: String },
+    day: { type: String },
+    year: { type: String },
+  },
 });
 
 // Pre-save hook to hash password

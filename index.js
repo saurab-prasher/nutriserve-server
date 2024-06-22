@@ -8,7 +8,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const cookieParser = require("cookie-parser");
-const path = require("path");
+
 const PORT = process.env.PORT || 5000;
 const authRouter = require("./routes/authRouter");
 const mealsRouter = require("./routes/mealsRouter");
@@ -19,7 +19,6 @@ const blogPostsRouter = require("./routes/blogPostsRouter");
 const contactRouter = require("./routes/contactRouter");
 
 app.use(cookieParser());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const allowedOrigins = [
   "http://localhost:3000",
