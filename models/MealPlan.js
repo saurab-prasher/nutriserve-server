@@ -1,12 +1,9 @@
-const mealPlanSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  week: Number,
-  year: Number,
-  meals: [
-    {
-      day: String,
-      mealType: String, // e.g., "Lunch"
-      mealId: { type: mongoose.Schema.Types.ObjectId, ref: "Meal" },
-    },
-  ],
+const mongoose = require("mongoose");
+
+const { MealSchema } = require("./Meal");
+const MealPlanSchema = new mongoose.Schema({
+  meals: [MealSchema],
+  createdAt: { type: Date, default: Date.now },
 });
+
+module.exports = MealPlanSchema;

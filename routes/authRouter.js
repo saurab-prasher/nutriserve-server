@@ -34,7 +34,6 @@ const upload = multer({
 });
 
 const authenticateUser = require("../middlewares/authMiddleware");
-const cors = require("cors");
 
 // Register User
 // Your JWT secret key
@@ -194,14 +193,15 @@ router.post("/login", async (req, res) => {
     res.json({
       user: {
         userId: user._id,
-        email: user.email,
         firstname: user.firstname,
         lastname: user.lastname,
+        email: user.email,
         avatarImg: user.avatarImg,
         gender: user.gender,
         birthday: user.birthday,
         address: user.address,
         plan: user.plan,
+        mealPlan: user.mealPlan,
       },
       msg: "Successfully signed",
       token,
@@ -370,15 +370,19 @@ router.get("/auth/user", authenticateUser, (req, res) => {
           lastname: user.lastname,
           email: user.email,
           avatarImg: user.avatarImg,
-
+          gender: user.gender,
+          birthday: user.birthday,
           address: user.address,
           plan: user.plan,
+          mealPlan: user.mealPlan,
         },
         msg: "Success",
       });
     })
     .catch((error) => {
-      res.status(500).json({ error: "An error occurred fetching user data." });
+      res.status(500).json({
+        error: "An error occurred fetching user data. " + error.message,
+      });
     });
 });
 

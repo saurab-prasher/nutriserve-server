@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const Meal = require("../models/Meal");
+const { Meal } = require("../models/Meal");
+const authenticateUser = require("../middlewares/authMiddleware");
+const User = require("../models/User");
 
 // CREATE a new meal
 router.post("/", async (req, res) => {
@@ -9,7 +11,9 @@ router.post("/", async (req, res) => {
     const savedMeal = await meal.save();
     res.status(201).json(savedMeal);
   } catch (error) {
-    res.status(400).json({ error: "Failed to create meal", message: error.message });
+    res
+      .status(400)
+      .json({ error: "Failed to create meal", message: error.message });
   }
 });
 
@@ -20,7 +24,9 @@ router.get("/", async (req, res) => {
     res.json(meals);
   } catch (error) {
     console.error("Error retrieving meals:", error);
-    res.status(500).json({ error: "Failed to retrieve meals", message: error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to retrieve meals", message: error.message });
   }
 });
 
@@ -34,7 +40,9 @@ router.get("/:id", async (req, res) => {
     res.json(meal);
   } catch (error) {
     console.error("Error retrieving meal by ID:", error);
-    res.status(500).json({ error: "Failed to retrieve meal", message: error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to retrieve meal", message: error.message });
   }
 });
 
@@ -46,7 +54,9 @@ router.put("/:id", async (req, res) => {
     });
     res.json(updatedMeal);
   } catch (error) {
-    res.status(400).json({ error: "Failed to update meal", message: error.message });
+    res
+      .status(400)
+      .json({ error: "Failed to update meal", message: error.message });
   }
 });
 
@@ -56,7 +66,36 @@ router.delete("/:id", async (req, res) => {
     await Meal.findByIdAndDelete(req.params.id);
     res.json({ message: "Meal deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: "Failed to delete meal", message: error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to delete meal", message: error.message });
+  }
+});
+
+router.post("/addMeal", authenticateUser, async (req, res) => {
+  const { mealId } = req.body;
+
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const meal = await Meal.findById(mealId);
+    if (!meal) {
+      return res.status(404).json({ error: "Meal not found" });
+    }
+
+    user.mealPlan.meals.push(meal);
+    await user.save();
+
+    res.status(200).json({
+      message: "Meal added to plan successfully",
+      mealPlan: user.mealPlan,
+    });
+  } catch (error) {
+    console.error("Error adding meal to plan:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 

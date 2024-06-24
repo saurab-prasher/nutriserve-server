@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// Updated Pricing Schema to match the provided structure
 const PricingSchema = new mongoose.Schema({
   planName: {
     type: String,

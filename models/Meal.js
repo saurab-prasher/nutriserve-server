@@ -13,11 +13,13 @@ const mealSchema = new mongoose.Schema(
       carbs: String,
       fat: String,
     },
-    imageUrl: { type: String }, // New field for image URL
+    imageUrl: { type: String },
   },
   { timestamps: true }
 );
 
 const Meal = mongoose.model("Meal", mealSchema);
-
-module.exports = Meal;
+module.exports = {
+  MealSchema: mealSchema,
+  Meal: Meal,
+};

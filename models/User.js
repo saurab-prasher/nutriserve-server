@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const Address = require("./Address");
 const { PricingSchema } = require("./pricingPlan");
+const MealPlanSchema = require("./MealPlan");
 
 const UserSchema = new mongoose.Schema({
   firstname: { type: String, required: true },
@@ -19,6 +20,10 @@ const UserSchema = new mongoose.Schema({
     month: { type: String },
     day: { type: String },
     year: { type: String },
+  },
+  mealPlan: {
+    meals: { type: [MealPlanSchema], default: [] },
+    createdAt: { type: Date, default: Date.now },
   },
 });
 
